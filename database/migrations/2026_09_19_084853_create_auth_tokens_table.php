@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('keys', function (Blueprint $table) {
+        Schema::create('auth_tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
+            $table->string('token')->unique();
+            $table->foreignId('key_id')->constrained()->cascadeOnDelete();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('keys');
+        Schema::dropIfExists('auth_tokens');
     }
 };
