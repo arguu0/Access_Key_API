@@ -17,7 +17,7 @@ class KeyVerificationSystem extends Controller
 
         $curr_time->modify('+1 hour');    // add 1 hour
     
-        Key::create([ 'key'=> hash('sha256', $key, 64),   // insert value to table + hash the value to 64bit binary
+        Key::create([ 'key'=> hash('sha256', $key),   // insert value to table + hash the value to 64bit binary
                       'expires_at'=> $curr_time->format('Y-m-d H:i:s') ]);   // insert expires time in DB format (2026-12-20 13:05:39)
 
         return response()->json([ "KEY"=> $key ]);  
@@ -28,7 +28,7 @@ class KeyVerificationSystem extends Controller
         $input_key = $request->input('key');  // get the input key send from frontend
 
         // find the first key that match with the above input key | *saved key was hashed*
-        $Key = Key::where('key', hash('sha256', $input_key, 64));  
+        $Key = Key::where('key', hash('sha256', $input_key));  
 
         if (!$input_key || !$Key->exists()) {   // check if input key was empty or key does not exist
             return response()->json([ 'msg'=> "invalid KEY" ], 404);
@@ -45,12 +45,12 @@ class KeyVerificationSystem extends Controller
             $curr_time->modify('+15 minutes');    // add 15 minutes
 
             if (AuthToken::where('id', $key_info->id)->exists()) {   // if bearer token exist, override it by updating
-                $key_info->token()->update([ 'token' => hash('sha256', $AuthToken, 64),
+                $key_info->token()->update([ 'token' => hash('sha256', $AuthToken),
                                              'expires_at' => $curr_time->format('Y-m-d H:i:s') ]);
             } else {
 
             // insert new value to token table
-            $key_info->token()->create([ 'token'=> hash('sha256', $AuthToken, 64),   // saved as hashed
+            $key_info->token()->create([ 'token'=> hash('sha256', $AuthToken),   // saved as hashed
                                          'expires_at'=> $curr_time->format('Y-m-d H:i:s') ]);   
             }
             // sending json response

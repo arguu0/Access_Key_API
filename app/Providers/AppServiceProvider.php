@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
 
-            return Limit::perMinute(1,1)->by($request->ip());  // rate limit by 1 key per 1 min
+            return Limit::perMinute(5,1)->by($request->ip());  // rate limit by 5 key per min
 
         });
     }

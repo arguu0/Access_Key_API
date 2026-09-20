@@ -18,7 +18,7 @@ class BearerAuthMiddleware
     {
         $bearer_token = $request->bearerToken();  // get the token from request header
 
-        $token = AuthToken::where('token', hash('sha256', $bearer_token, 64 ));  // check whether the token is in DB
+        $token = AuthToken::where('token', hash('sha256', $bearer_token));  // check whether the token is in DB
         
         if (!$bearer_token || !$token->exists()) {      // if bearer token is missing or wrong | exists() results in boolean
 
