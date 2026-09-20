@@ -15,6 +15,6 @@ class Key extends Model
     public function token()
     {
         // Key table has many 'token' because I add foreign key to token table
-        return $this->hasMany(AuthToken::class); 
+        return $this->hasOne(AuthToken::class); 
     }
 }

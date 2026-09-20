@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuthToken;
 use Illuminate\Http\Request;
 use App\Models\Key;
 use DateTime;
@@ -43,33 +44,39 @@ class KeyVerificationSystem extends Controller
         
             $curr_time->modify('+15 minutes');    // add 15 minutes
 
-            // insert value to table that has relation with "key" table
+            if (AuthToken::where('id', $key_info->id)->exists()) {   // if bearer token exist, override it by updating
+                $key_info->token()->update([ 'token' => hash('sha256', $AuthToken, 64),
+                                             'expires_at' => $curr_time->format('Y-m-d H:i:s') ]);
+            } else {
+
+            // insert new value to token table
             $key_info->token()->create([ 'token'=> hash('sha256', $AuthToken, 64),   // saved as hashed
                                          'expires_at'=> $curr_time->format('Y-m-d H:i:s') ]);   
-
+            }
             // sending json response
             return response()->json(['msg' => 'Success',
                                     'Remember Your User ID'=> $key_info->id,
                                     'Auth_token [use this in authorization]'=> $AuthToken], 200);   // intentionally sending this because testing on postman
+
         } else {   
             // if key exp time reached or greater
-            return response()->json([ 'msg'=> "KEY Expired" ], 404);
+            return response()->json([ 'msg'=> "KEY Expired. Create a new key." ], 404);
         }
     }
 
     public function ViewProtectedRoute (Request $request)
     {
         $token = $request->attributes->get('token');   // get the attribute we set in the middleware
-        
+       
         $curr_time = new DateTime('now');
         
-        if ($curr_time->format('Y-m-d H:i:s') > $token->expires_at) {
+        if ($curr_time->format('Y-m-d H:i:s') > $token->key->expires_at) {
 
-            return response()->json([ 'msg'=> "Unauthorised Access"], 401);
+            return response()->json([ 'msg'=> "Unauthorised Access. Login using the key again"], 401);
 
         }
 
-        $interval = $curr_time->diff(new DateTime($token->expires_at));   // time difference between exp time and curr time
+        $interval = $curr_time->diff(new DateTime($token->key->expires_at));   // time difference between *key* exp time and curr time
 
         return response()->json([ 'KEY ID'=> $token->key_id,       // interval is in object state so had to format in order to print values
                                   'Key Expires in'=>$interval->format('%i min %s sec')], 200);   
