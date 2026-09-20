@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\KeyVerificationSystem;
 use App\Http\Middleware\BearerAuthMiddleware;
-use App\Models\AuthToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
